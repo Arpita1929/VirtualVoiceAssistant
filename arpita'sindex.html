@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <!-- Font Awesome for better icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    
+    <title>Toffy - Voice Assistant</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+        :root {
+            --primary: #6c63ff;
+            --secondary: #8f8aff;
+            --dark: #2e2e41;
+            --light: #f8f9fa;
+            --text: #4a4a68;
+            --success: #3cd4a0;
+            --warning: #ffb866;
+        }
+
+        /* Base Styling */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            padding: 0.8rem 1.5rem;
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+            color: var(--primary) !important;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-brand img {
+            height: 30px;
+            margin-right: 10px;
+        }
+
+        .nav-link {
+            color: var(--text) !important;
+            font-weight: 500;
+            margin: 0 10px;
+            position: relative;
+        }
+
+        .nav-link:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover:after {
+            width: 100%;
+        }
+
+        .navbar-toggler {
+            border: none;
+            outline: none;
+        }
+
+        /* Main Content Styling */
+        .main-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 0;
+        }
+
+        .assistant-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .header p {
+            margin: 5px 0 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            overflow: hidden;
+        }
+
+        .chatbox {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .chat {
+            max-width: 85%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            font-size: 15px;
+            line-height: 1.4;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            position: relative;
+            margin-bottom: 5px;
+        }
+
+        .user {
+            background: var(--primary);
+            color: white;
+            align-self: flex-end;
+            border-radius: 18px 18px 0 18px;
+        }
+
+        .assistant {
+            background: var(--light);
+            color: var(--text);
+            align-self: flex-start;
+            border-radius: 18px 18px 18px 0;
+            display: flex;
+            gap: 12px;
+        }
+
+        .assistant-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        /* Microphone Control */
+        .controls {
+            display: flex;
+            justify-content: center;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+        }
+
+        .mic-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .mic-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(108, 99, 255, 0.5);
+        }
+
+        .mic-btn.listening {
+            animation: pulse 1.5s infinite;
+        }
+
+        .mic-btn i {
+            font-size: 28px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 4px 15px rgba(108, 99, 255, 0.4); }
+            50% { transform: scale(1.1); box-shadow: 0 8px 25px rgba(108, 99, 255, 0.6); }
+            100% { transform: scale(1); box-shadow: 0 4px 15px rgba(108, 99, 255, 0.4); }
+        }
+
+        /* Loader */
+        .loader {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .loader-dot {
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 5px;
+            animation: wave 1.5s infinite ease-in-out;
+        }
+
+        .loader-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loader-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes wave {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        /* Status Indicator */
+        .status {
+            font-size: 14px;
+            text-align: center;
+            margin-top: 10px;
+            color: var(--text);
+            opacity: 0.8;
+        }
+
+        /* Help Tooltip */
+        .help-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .help-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Tooltip for commands */
+        .tooltip-container {
+            position: absolute;
+            right: 60px;
+            top: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            width: 250px;
+            z-index: 100;
+            display: none;
+        }
+
+        .tooltip-container h5 {
+            margin-top: 0;
+            font-size: 1rem;
+            color: var(--primary);
+        }
+
+        .commands-list {
+            padding-left: 15px;
+            margin-bottom: 0;
+            font-size: 0.85rem;
+        }
+
+        .commands-list li {
+            margin-bottom: 5px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .assistant-container {
+                margin: 0 15px;
+                height: 80vh;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .chat {
+                max-width: 90%;
+                padding: 10px 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-robot mr-2"></i> Toffy
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="assistant-container">
+                        <div class="header">
+                            <h1>Toffy Voice Assistant</h1>
+                            <p>Ask me anything or give me commands</p>
+                            <div class="help-btn" id="helpBtn">
+                                <i class="fas fa-question"></i>
+                            </div>
+                            <div class="tooltip-container" id="tooltipContainer">
+                                <h5>Available Commands</h5>
+                                <ul class="commands-list">
+                                    <li>"Open [website]" - Google, YouTube, etc.</li>
+                                    <li>"What time is it?"</li>
+                                    <li>"What's today's date?"</li>
+                                    <li>"Search for [query]"</li>
+                                    <li>"Calculate [expression]"</li>
+                                    <li>"Open Task Manager"</li>
+                                    <li>"Take screenshot"</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="chat-area">
+                            <div id="chatbox" class="chatbox">
+                                <!-- Messages will appear here -->
+                                <div class="chat assistant">
+                                    <div class="assistant-avatar">
+                                        <i class="fas fa-robot"></i>
+                                    </div>
+                                    <div class="message-content">
+                                        Hi there! I'm Toffy, your personal voice assistant. Click the microphone button and say something!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="controls">
+                            <div class="mic-btn" id="micBtn" onclick="toggleListening()">
+                                <i class="fas fa-microphone"></i>
+                                <div class="loader" id="loader">
+                                    <span class="loader-dot"></span>
+                                    <span class="loader-dot"></span>
+                                    <span class="loader-dot"></span>
+                                </div>
+                            </div>
+                            <p class="status" id="status">Click to start</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatbox = document.getElementById('chatbox');
+        const loader = document.getElementById('loader');
+        const micBtn = document.getElementById('micBtn');
+        const statusText = document.getElementById('status');
+        const helpBtn = document.getElementById('helpBtn');
+        const tooltipContainer = document.getElementById('tooltipContainer');
+        
+        let isListening = false;
+        let recognition;
+
+        // Initialize speech recognition
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+            
+            recognition.onstart = function() {
+                isListening = true;
+                micBtn.classList.add('listening');
+                statusText.textContent = "Listening...";
+            };
+            
+            recognition.onend = function() {
+                isListening = false;
+                micBtn.classList.remove('listening');
+                statusText.textContent = "Click to start";
+            };
+            
+            recognition.onresult = function(event) {
+                const voiceText = event.results[0][0].transcript.toLowerCase();
+                addMessage(voiceText, 'user');
+                processCommand(voiceText);
+            };
+            
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error', event.error);
+                addMessage("Sorry, I couldn't hear you. Please try again.", 'assistant');
+                isListening = false;
+                micBtn.classList.remove('listening');
+                statusText.textContent = "Error. Try again";
+            };
+        } else {
+            alert('Speech recognition is not supported in this browser. Please try Chrome or Edge.');
+        }
+
+        // Toggle listening state
+        function toggleListening() {
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+
+        // Add message to chat
+        function addMessage(message, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('chat', sender);
+            
+            if (sender === 'assistant') {
+                const avatarDiv = document.createElement('div');
+                avatarDiv.classList.add('assistant-avatar');
+                avatarDiv.innerHTML = '<i class="fas fa-robot"></i>';
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.classList.add('message-content');
+                contentDiv.textContent = message;
+                
+                messageDiv.appendChild(avatarDiv);
+                messageDiv.appendChild(contentDiv);
+            } else {
+                messageDiv.textContent = message;
+            }
+            
+            chatbox.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Process voice command
+        function processCommand(text) {
+            // Show processing state
+            statusText.textContent = "Processing...";
+            
+            // System commands
+            const systemCommands = {
+                'show desktop': 'showDesktop',
+                'open start menu': 'openStartMenu',
+                'lock screen': 'lockScreen',
+                'open file explorer': 'openFileExplorer',
+                'open run dialog': 'openRunDialog',
+                'open task manager': 'openTaskManager',
+                'take screenshot': 'takeScreenshot',
+                'shutdown': 'shutdown',
+                'restart': 'restart',
+                'open notepad': 'openNotepad',
+                'open calculator': 'openCalculator'
+            };
+            
+            // Check for system commands
+            for (const [command, action] of Object.entries(systemCommands)) {
+                if (text.includes(command)) {
+                    executeSystemCommand(action);
+                    return;
+                }
+            }
+            
+            // Standard commands
+            let response = '';
+            
+            if (text.includes('hello') || text.includes('hi')) {
+                response = 'Hello! I am Toffy, how can I assist you today?';
+            } else if (text.includes('time')) {     
+                response = `The current time is ${new Date().toLocaleTimeString()}`;
+            } else if (text.includes('date')) {
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                response = `Today is ${new Date().toLocaleDateString(undefined, options)}`;
+            } else if (text.includes('open google')) {
+                response = 'Opening Google for you';
+                window.open('https://www.google.com', '_blank');
+            } else if (text.includes('open youtube')) {
+                response = 'Opening YouTube now';
+                window.open('https://www.youtube.com', '_blank');
+            } else if (text.includes('open linkedin')) {
+                response = 'Opening LinkedIn';
+                window.open('https://www.linkedin.com', '_blank');
+            } else if (text.includes('open email') || text.includes('open gmail')) {
+                response = 'Opening your email';
+                window.open('https://mail.google.com', '_blank');
+            } else if (text.includes('open spotify')) {
+                response = 'Opening Spotify for some music';
+                window.open('https://open.spotify.com', '_blank');
+            } else if (text.includes('open instagram')) {
+                response = 'Opening Instagram';
+                window.open('https://www.instagram.com', '_blank');
+            } else if (text.includes('open facebook')) {
+                response = 'Opening Facebook';
+                window.open('https://www.facebook.com', '_blank');
+            } else if (text.includes('open settings')) {
+                response = 'Opening your system settings';
+                window.open('ms-settings:', '_blank');
+            } else if (text.includes('search for')) {
+                let query = text.replace('search for', '').trim();
+                response = `Searching for "${query}" on Google`;
+                window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+            } else if (text.includes('calculate')) {
+                try {
+                    let expression = text.replace('calculate', '').trim();
+                    // Safer evaluation method
+                    if (/^[0-9\s\+\-\*\/\(\)\.]+$/.test(expression)) {
+                        let result = eval(expression);
+                        response = `${expression} = ${result}`;
+                    } else {
+                        response = "I can only calculate basic math expressions.";
+                    }
+                } catch (error) {
+                    response = "I couldn't calculate that. Please try a simpler expression.";
+                }
+            } else if (text.includes('who are you') || text.includes('what are you')) {
+                response = "I'm Toffy, your virtual voice assistant. I can help you open websites, search the web, tell you the time and date, and perform system commands!";
+            } else if (text.includes('thank you') || text.includes('thanks')) {
+                response = "You're welcome! Is there anything else I can help you with?";
+            } else if (text.includes('weather')) {
+                response = "I'm sorry, I don't have access to weather data yet. You can ask me to search for weather information online.";
+            } else if (text.includes('joke')) {
+                const jokes = [
+                    "Why don't scientists trust atoms? Because they make up everything!",
+                    "What did the ocean say to the beach? Nothing, it just waved.",
+                    "Why did the scarecrow win an award? Because he was outstanding in his field!",
+                    "How does a penguin build its house? Igloos it together!"
+                ];
+                response = jokes[Math.floor(Math.random() * jokes.length)];
+            } else {
+                response = "I'm not sure how to help with that. Try asking me about the time, date, or to open websites and applications.";
+            }
+            
+            // Speak the response
+            speak(response);
+            
+            // Add to chat
+            addMessage(response, 'assistant');
+        }
+
+        // Execute system command via backend
+        function executeSystemCommand(action) {
+            speak(`Executing ${action.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
+            
+            // Simulate backend call - replace with actual implementation
+            setTimeout(() => {
+                const responses = {
+                    'showDesktop': 'Showing desktop',
+                    'openStartMenu': 'Opening start menu',
+                    'lockScreen': 'Locking your screen',
+                    'openFileExplorer': 'Opening file explorer',
+                    'openRunDialog': 'Opening run dialog',
+                    'openTaskManager': 'Opening task manager',
+                    'takeScreenshot': 'Taking a screenshot',
+                    'shutdown': 'Preparing to shut down',
+                    'restart': 'Preparing to restart',
+                    'openNotepad': 'Opening notepad',
+                    'openCalculator': 'Opening calculator'
+                };
+                
+                addMessage(responses[action] || 'Command executed', 'assistant');
+            }, 1000);
+        }
+
+        // Text-to-speech function
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const speech = new SpeechSynthesisUtterance();
+                speech.text = text;
+                speech.volume = 1;
+                speech.rate = 1;
+                speech.pitch = 1;
+                
+                // Get voices and set a better voice if available
+                window.speechSynthesis.onvoiceschanged = () => {
+                    const voices = window.speechSynthesis.getVoices();
+                    const preferredVoices = voices.filter(voice => 
+                        voice.name.includes('Female') || 
+                        voice.name.includes('Google') || 
+                        voice.name.includes('Samantha')
+                    );
+                    
+                    if (preferredVoices.length > 0) {
+                        speech.voice = preferredVoices[0];
+                    }
+                };
+                
+                window.speechSynthesis.speak(speech);
+            }
+        }
+
+        // Scroll chat to bottom
+        function scrollToBottom() {
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+
+        // Toggle help tooltip
+        helpBtn.addEventListener('click', function() {
+            if (tooltipContainer.style.display === 'block') {
+                tooltipContainer.style.display = 'none';
+            } else {
+                tooltipContainer.style.display = 'block';
+            }
+        });
+
+        // Close tooltip when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!helpBtn.contains(event.target) && !tooltipContainer.contains(event.target)) {
+                tooltipContainer.style.display = 'none';
+            }
+        });
+
+        // Add welcome message
+        document.addEventListener('DOMContentLoaded', function() {
+            scrollToBottom();
+        });
+    </script>
+
+    <!-- jQuery, Popper.js, and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js"></script>
+</body>
+
+</html>
